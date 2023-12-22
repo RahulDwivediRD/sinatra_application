@@ -93,6 +93,33 @@ class UsersController < Sinatra::Base
     end
   end
 
+
+  put '/disable_2fa_authentication' do
+    return { status: 'success', message: 'Two-factor authentication already disabled' }.to_json unless @current_user.two_factor_enabled?
+
+    if @current_user.update!(two_factor_enabled: false)
+      { status: :ok, message: 'Two-factor authentication disabled sucessfully' }.to_json
+    else
+      { status: :unprocessable_entity, message: @current_user.errors.messages }.to_json
+    end
+  end
+
+  put '/change_password' do
+    begin
+      request.body.rewind
+      params = parse_request
+      if BCrypt::Password.new(@current_user.password_digest) == params['current_password']
+        if @current_user.update_password(params['new_password'])
+          { status: 'success', message: 'Password changed successfully.' }.to_json
+        else
+          { status: :unprocessable_entity, errors: @current_user.errors.messages }.to_json
+        end
+      end
+    rescue StandardError => e
+      { status: 'error', message: "Unexpected error: #{e.message}" }.to_json
+    end
+  end
+
   private
 
   def send_welcome_email(email)

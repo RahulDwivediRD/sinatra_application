@@ -1,6 +1,6 @@
 require 'sinatra/activerecord/rake'
-require './app'  # Adjust the path if needed
+require './app'
 
 task :environment do
-  require './app'  # Adjust the path if needed
+  require './app'
 end
